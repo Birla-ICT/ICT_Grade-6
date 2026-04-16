@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Data Backup Game</title>
+
+    <style>
+        body {
+            font-family: Arial;
+            text-align: center;
+            background: linear-gradient(to right, #4facfe, #00f2fe);
+            color: white;
+        }
+
+        h1 {
+            margin-top: 20px;
+        }
+
+        #gameArea {
+            display: none;
+            margin-top: 20px;
+        }
+
+        .container {
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+            margin-top: 20px;
+        }
+
+        .drag {
+            width: 120px;
+            height: 120px;
+            border: 2px dashed white;
+            border-radius: 10px;
+            padding: 10px;
+            background: rgba(255,255,255,0.2);
+        }
+
+        .drag img {
+            width: 80px;
+            cursor: grab;
+        }
+
+        .drop {
+   		 width: 220px;
+   		 height: 130px;
+   		 border: 4px solid white;   /* thicker solid border */
+   		 border-radius: 12px;
+  		  padding: 12px;
+   		 background: rgba(255,255,255,0.25);
+    
+   		 color: white;
+  		  font-size: 18px;          /* increased font size */
+   		 font-weight: bold;        /* bold text */
+    
+   		 display: flex;
+   		 align-items: center;
+   		 justify-content: center;
+    		text-align: center;
+}
+
+        button.control {
+            padding: 10px 20px;
+            font-size: 16px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 10px;
+        }
+
+        #startBtn { background: green; color: white; }
+        #restartBtn { background: orange; color: white; }
+
+        /* Confetti */
+        .confetti {
+            position: fixed;
+            width: 10px;
+            height: 10px;
+            background: yellow;
+            top: 0;
+            animation: fall 3s linear infinite;
+        }
+
+        @keyframes fall {
+            to { transform: translateY(100vh); }
+        }
+    </style>
+</head>
+
+<body>
+
+<h1>🎮 Data Backup & Cloud Storage Game</h1>
+
+<button id="startBtn" class="control" onclick="startGame()">Start Game</button>
+<button id="restartBtn" class="control" onclick="restartGame()">Restart</button>
+
+<div id="gameArea">
+
+    <!-- DRAG ITEMS -->
+    <div class="container" id="dragContainer">
+
+        <div class="drag" draggable="true" id="backup" ondragstart="drag(event)">
+            <img src="image_backup.png">
+        </div>
+
+        <div class="drag" draggable="true" id="cloud" ondragstart="drag(event)">
+            <img src="Image_Cloud.png">
+        </div>
+
+        <div class="drag" draggable="true" id="internet" ondragstart="drag(event)">
+            <img src="Image_Internet.png">
+        </div>
+
+        <div class="drag" draggable="true" id="datacenter" ondragstart="drag(event)">
+            <img src="Image_DataCenter.png">
+        </div>
+
+    </div>
+
+    <!-- DROP BUTTONS -->
+    <div class="container">
+
+        <div class="drop" data-match="backup" ondrop="drop(event)" ondragover="allowDrop(event)">
+            📁 Making copies of data
+        </div>
+
+        <div class="drop" data-match="cloud" ondrop="drop(event)" ondragover="allowDrop(event)">
+            ☁️ Data stored on remote servers
+        </div>
+
+        <div class="drop" data-match="internet" ondrop="drop(event)" ondragover="allowDrop(event)">
+            🌐 Required to access cloud
+        </div>
+
+        <div class="drop" data-match="datacenter" ondrop="drop(event)" ondragover="allowDrop(event)">
+            🏢 Servers around the world
+        </div>
+
+    </div>
+
+</div>
+
+<!-- SOUND -->
+<audio id="correctSound" src="correct.mp3"></audio>
+<audio id="wrongSound" src="wrong.mp3"></audio>
+
+<script>
+
+function startGame() {
+    document.getElementById("gameArea").style.display = "block";
+    shuffle();
+}
+
+function restartGame() {
+
+    // Move all items back to drag container
+    let dragContainer = document.getElementById("dragContainer");
+    let draggables = document.querySelectorAll(".drag");
+
+    draggables.forEach(item => {
+        dragContainer.appendChild(item);
+    });
+
+    // Shuffle again
+    shuffle();
+
+    // Stop any playing sounds
+    document.getElementById("correctSound").pause();
+    document.getElementById("wrongSound").pause();
+
+    // Reset sounds to start
+    document.getElementById("correctSound").currentTime = 0;
+    document.getElementById("wrongSound").currentTime = 0;
+
+    // Remove existing confetti
+    document.querySelectorAll(".confetti").forEach(c => c.remove());
+}
+
+function allowDrop(ev) {
+    ev.preventDefault();
+}
+
+function drag(ev) {
+    ev.dataTransfer.setData("text", ev.target.parentElement.id);
+}
+
+function drop(ev) {
+    ev.preventDefault();
+
+    let data = ev.dataTransfer.getData("text");
+    let dragged = document.getElementById(data);
+
+    let dropBox = ev.target.closest(".drop");
+
+    if (!dropBox) return;
+
+    if (dropBox.dataset.match === data) {
+        dropBox.appendChild(dragged);
+        document.getElementById("correctSound").play();
+        createConfetti();
+    } else {
+        document.getElementById("wrongSound").play();
+    }
+}
+
+function shuffle() {
+    let container = document.getElementById("dragContainer");
+    let items = Array.from(container.children);
+    items.sort(() => Math.random() - 0.5);
+    items.forEach(item => container.appendChild(item));
+}
+
+function createConfetti() {
+    for (let i = 0; i < 20; i++) {
+        let confetti = document.createElement("div");
+        confetti.classList.add("confetti");
+        confetti.style.left = Math.random() * window.innerWidth + "px";
+        document.body.appendChild(confetti);
+
+        setTimeout(() => confetti.remove(), 3000);
+    }
+}
+
+</script>
+
+</body>
+</html>
